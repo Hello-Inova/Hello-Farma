@@ -44,6 +44,7 @@ public class HelloFarmaDbContext(DbContextOptions<HelloFarmaDbContext> options, 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Ignore<DomainEvent>(); // usado só em memória para eventos de domínio; nunca deve ser persistido
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(HelloFarmaDbContext).Assembly);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
