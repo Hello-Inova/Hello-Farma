@@ -60,6 +60,9 @@ builder.Services.AddScoped<IMovimentacaoEstoqueRepository, MovimentacaoEstoqueRe
 builder.Services.AddScoped<IBaixaEstoqueService, BaixaEstoqueService>();
 builder.Services.AddScoped<IVendaRepository, VendaRepository>();
 builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>();
+builder.Services.AddScoped<IEntradaEstoqueService, EntradaEstoqueService>();
+builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
+builder.Services.AddScoped<IPedidoCompraRepository, PedidoCompraRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Segurança

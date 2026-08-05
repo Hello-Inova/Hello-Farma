@@ -1,6 +1,7 @@
 using HelloFarma.Application.Interfaces;
 using HelloFarma.Domain.Common;
 using HelloFarma.Domain.Entities.Auth;
+using HelloFarma.Domain.Entities.Compras;
 using HelloFarma.Domain.Entities.Estoque;
 using HelloFarma.Domain.Entities.Produtos;
 using HelloFarma.Domain.Entities.Tenants;
@@ -26,6 +27,9 @@ public class HelloFarmaDbContext(DbContextOptions<HelloFarmaDbContext> options, 
     public DbSet<MovimentacaoEstoque> MovimentacoesEstoque => Set<MovimentacaoEstoque>();
     public DbSet<Venda> Vendas => Set<Venda>();
     public DbSet<ItemVenda> ItensVenda => Set<ItemVenda>();
+    public DbSet<Fornecedor> Fornecedores => Set<Fornecedor>();
+    public DbSet<PedidoCompra> PedidosCompra => Set<PedidoCompra>();
+    public DbSet<ItemPedidoCompra> ItensPedidoCompra => Set<ItemPedidoCompra>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
