@@ -1,0 +1,41 @@
+using HelloFarma.Application.Interfaces;
+using HelloFarma.Domain.Entities.Vendas;
+using HelloFarma.Domain.Enums;
+using MediatR;
+
+namespace HelloFarma.Application.UseCases.Vendas.CriarVenda;
+
+public class CriarVendaHandler(
+    IProdutoRepository produtoRepository,
+    IVendaRepository vendaRepository,
+    IBaixaEstoqueService baixaEstoqueService,
+    ICurrentTenant currentTenant,
+    ICurrentUser currentUser,
+    IUnitOfWork unitOfWork) : IRequestHandler<CriarVendaCommand, Guid>
+{
+    public async Task<Guid> Handle(CriarVendaCommand request, CancellationToken ct)
+    {
+        if (request.Itens.Count == 0)
+            throw new InvalidOperationException("A venda precisa ter ao menos um item.");
+
+        var venda = new Venda(currentTenant.TenantId, currentUser.UsuarioId, (FormaPagamento)request.FormaPagamento, request.ClienteId);
+
+        foreach (var itemInput in request.Itens)
+        {
+            var produto = await produtoRepository.GetByIdAsync(itemInput.ProdutoId, ct)
+                ?? throw new KeyNotFoundException($"Produto {itemInput.ProdutoId} não encontrado.");
+
+            if (!produto.Ativo)
+                throw new InvalidOperationException($"Produto '{produto.Nome}' está inativo.");
+
+            venda.AdicionarItem(produto.Id, produto.Nome, itemInput.Quantidade, produto.Pmc);
+
+            await baixaEstoqueService.BaixarAsync(produto.Id, itemInput.Quantidade, $"Venda {venda.Id}", ct);
+        }
+
+        await vendaRepository.AddAsync(venda, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+
+        return venda.Id;
+    }
+}

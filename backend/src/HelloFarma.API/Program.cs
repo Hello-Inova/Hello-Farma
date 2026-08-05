@@ -2,6 +2,7 @@ using System.Text;
 using HelloFarma.Application.Interfaces;
 using HelloFarma.Application.UseCases.Produtos.CriarProduto;
 using HelloFarma.Domain.Entities.Auth;
+using HelloFarma.Application.Services;
 using HelloFarma.Infrastructure.Identity;
 using HelloFarma.Infrastructure.Persistence;
 using HelloFarma.Infrastructure.Repositories;
@@ -56,6 +57,9 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<ILoteRepository, LoteRepository>();
 builder.Services.AddScoped<IMovimentacaoEstoqueRepository, MovimentacaoEstoqueRepository>();
+builder.Services.AddScoped<IBaixaEstoqueService, BaixaEstoqueService>();
+builder.Services.AddScoped<IVendaRepository, VendaRepository>();
+builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Segurança

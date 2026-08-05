@@ -5,6 +5,7 @@ using HelloFarma.Domain.Entities.Estoque;
 using HelloFarma.Domain.Entities.Produtos;
 using HelloFarma.Domain.Entities.Tenants;
 using HelloFarma.Domain.Entities.Usuarios;
+using HelloFarma.Domain.Entities.Vendas;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelloFarma.Infrastructure.Persistence;
@@ -23,6 +24,8 @@ public class HelloFarmaDbContext(DbContextOptions<HelloFarmaDbContext> options, 
     public DbSet<Produto> Produtos => Set<Produto>();
     public DbSet<Lote> Lotes => Set<Lote>();
     public DbSet<MovimentacaoEstoque> MovimentacoesEstoque => Set<MovimentacaoEstoque>();
+    public DbSet<Venda> Vendas => Set<Venda>();
+    public DbSet<ItemVenda> ItensVenda => Set<ItemVenda>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
