@@ -64,6 +64,8 @@ builder.Services.AddScoped<IEntradaEstoqueService, EntradaEstoqueService>();
 builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
 builder.Services.AddScoped<IPedidoCompraRepository, PedidoCompraRepository>();
 builder.Services.AddScoped<IContaFinanceiraRepository, ContaFinanceiraRepository>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IPedidoDeliveryRepository, PedidoDeliveryRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Segurança
