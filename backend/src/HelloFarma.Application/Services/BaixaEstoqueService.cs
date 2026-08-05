@@ -9,9 +9,9 @@ public class BaixaEstoqueService(
     IMovimentacaoEstoqueRepository movimentacaoRepository,
     ICurrentTenant currentTenant) : IBaixaEstoqueService
 {
-    public async Task BaixarAsync(Guid produtoId, int quantidade, string motivo, CancellationToken ct = default)
+    public async Task BaixarAsync(Guid produtoId, int quantidade, string motivo, Guid? filialId = null, CancellationToken ct = default)
     {
-        var lotes = (await loteRepository.ListarPorProdutoAsync(produtoId, ct))
+        var lotes = (await loteRepository.ListarPorProdutoAsync(produtoId, filialId, ct))
             .Where(l => l.QuantidadeAtual > 0)
             .OrderBy(l => l.Validade)
             .ToList();

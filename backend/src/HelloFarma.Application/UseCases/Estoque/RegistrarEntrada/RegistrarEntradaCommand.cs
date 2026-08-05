@@ -3,8 +3,8 @@ using MediatR;
 namespace HelloFarma.Application.UseCases.Estoque.RegistrarEntrada;
 
 /// <summary>
-/// Registra entrada de estoque. Se o lote já existir para o produto, soma a quantidade;
-/// caso contrário, cria um novo lote.
+/// Registra entrada de estoque. Se o lote já existir para o produto (na mesma filial),
+/// soma a quantidade; caso contrário, cria um novo lote.
 /// </summary>
 public record RegistrarEntradaCommand(
     Guid ProdutoId,
@@ -12,4 +12,5 @@ public record RegistrarEntradaCommand(
     DateOnly Validade,
     int Quantidade,
     string? Localizacao,
-    string? Motivo) : IRequest<Guid>;
+    string? Motivo,
+    Guid? FilialId = null) : IRequest<Guid>;

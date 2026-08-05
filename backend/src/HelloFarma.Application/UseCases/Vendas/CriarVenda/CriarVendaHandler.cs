@@ -22,7 +22,7 @@ public class CriarVendaHandler(
         if (request.Itens.Count == 0)
             throw new InvalidOperationException("A venda precisa ter ao menos um item.");
 
-        var venda = new Venda(currentTenant.TenantId, currentUser.UsuarioId, (FormaPagamento)request.FormaPagamento, request.ClienteId);
+        var venda = new Venda(currentTenant.TenantId, currentUser.UsuarioId, (FormaPagamento)request.FormaPagamento, request.ClienteId, request.FilialId);
 
         foreach (var itemInput in request.Itens)
         {
@@ -34,7 +34,7 @@ public class CriarVendaHandler(
 
             venda.AdicionarItem(produto.Id, produto.Nome, itemInput.Quantidade, produto.Pmc);
 
-            await baixaEstoqueService.BaixarAsync(produto.Id, itemInput.Quantidade, $"Venda {venda.Id}", ct);
+            await baixaEstoqueService.BaixarAsync(produto.Id, itemInput.Quantidade, $"Venda {venda.Id}", request.FilialId, ct);
         }
 
         await vendaRepository.AddAsync(venda, ct);

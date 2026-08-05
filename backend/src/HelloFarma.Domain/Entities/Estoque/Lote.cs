@@ -5,10 +5,13 @@ namespace HelloFarma.Domain.Entities.Estoque;
 /// <summary>
 /// Lote de um produto em estoque. Controle de validade e quantidade é feito
 /// sempre no nível de lote, nunca apenas no produto — exigência regulatória do setor.
+/// Pode estar vinculado a uma Filial específica (estoque por unidade); quando
+/// FilialId é nulo, o lote é tratado como estoque único/central do tenant.
 /// </summary>
 public class Lote : BaseEntity
 {
     public Guid ProdutoId { get; private set; }
+    public Guid? FilialId { get; private set; }
     public string NumeroLote { get; private set; } = default!;
     public DateOnly Validade { get; private set; }
     public int QuantidadeAtual { get; private set; }
@@ -16,10 +19,11 @@ public class Lote : BaseEntity
 
     protected Lote() { }
 
-    public Lote(Guid tenantId, Guid produtoId, string numeroLote, DateOnly validade, int quantidadeInicial, string? localizacao = null)
+    public Lote(Guid tenantId, Guid produtoId, string numeroLote, DateOnly validade, int quantidadeInicial, string? localizacao = null, Guid? filialId = null)
     {
         TenantId = tenantId;
         ProdutoId = produtoId;
+        FilialId = filialId;
         NumeroLote = numeroLote;
         Validade = validade;
         QuantidadeAtual = quantidadeInicial;

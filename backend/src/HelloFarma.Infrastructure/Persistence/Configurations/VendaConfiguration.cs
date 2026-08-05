@@ -13,6 +13,7 @@ public class VendaConfiguration : IEntityTypeConfiguration<Venda>
         builder.Property(v => v.ValorTotal).HasColumnType("decimal(10,2)");
         builder.HasMany(v => v.Itens).WithOne().HasForeignKey(i => i.VendaId).OnDelete(DeleteBehavior.Cascade);
         builder.HasIndex(v => new { v.TenantId, v.RealizadaEmUtc });
+        builder.HasIndex(v => v.FilialId);
         builder.Metadata.FindNavigation(nameof(Venda.Itens))!.SetPropertyAccessMode(Microsoft.EntityFrameworkCore.PropertyAccessMode.Field);
     }
 }

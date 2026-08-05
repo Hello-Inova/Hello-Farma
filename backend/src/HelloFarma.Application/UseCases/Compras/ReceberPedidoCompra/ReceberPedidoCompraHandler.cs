@@ -23,7 +23,7 @@ public class ReceberPedidoCompraHandler(
         {
             await entradaEstoqueService.EntrarAsync(
                 item.ProdutoId, item.NumeroLote, item.Validade, item.Quantidade,
-                null, $"Recebimento do pedido de compra {pedido.Id}", ct);
+                null, $"Recebimento do pedido de compra {pedido.Id}", filialId: null, ct: ct);
         }
 
         pedidoRepository.Update(pedido);

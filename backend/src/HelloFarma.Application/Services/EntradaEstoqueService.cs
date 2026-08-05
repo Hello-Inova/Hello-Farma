@@ -9,13 +9,13 @@ public class EntradaEstoqueService(
     IMovimentacaoEstoqueRepository movimentacaoRepository,
     ICurrentTenant currentTenant) : IEntradaEstoqueService
 {
-    public async Task<Guid> EntrarAsync(Guid produtoId, string numeroLote, DateOnly validade, int quantidade, string? localizacao, string motivo, CancellationToken ct = default)
+    public async Task<Guid> EntrarAsync(Guid produtoId, string numeroLote, DateOnly validade, int quantidade, string? localizacao, string motivo, Guid? filialId = null, CancellationToken ct = default)
     {
-        var lote = await loteRepository.ObterPorNumeroAsync(produtoId, numeroLote, ct);
+        var lote = await loteRepository.ObterPorNumeroAsync(produtoId, numeroLote, filialId, ct);
 
         if (lote is null)
         {
-            lote = new Lote(currentTenant.TenantId, produtoId, numeroLote, validade, quantidade, localizacao);
+            lote = new Lote(currentTenant.TenantId, produtoId, numeroLote, validade, quantidade, localizacao, filialId);
             await loteRepository.AddAsync(lote, ct);
         }
         else

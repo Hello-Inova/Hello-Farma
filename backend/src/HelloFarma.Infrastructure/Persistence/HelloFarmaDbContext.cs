@@ -6,6 +6,7 @@ using HelloFarma.Domain.Entities.Fiscal;
 using HelloFarma.Domain.Entities.Compras;
 using HelloFarma.Domain.Entities.Crm;
 using HelloFarma.Domain.Entities.Delivery;
+using HelloFarma.Domain.Entities.Empresa;
 using HelloFarma.Domain.Entities.Financeiro;
 using HelloFarma.Domain.Entities.Estoque;
 using HelloFarma.Domain.Entities.Produtos;
@@ -41,6 +42,7 @@ public class HelloFarmaDbContext(DbContextOptions<HelloFarmaDbContext> options, 
     public DbSet<DocumentoFiscal> DocumentosFiscais => Set<DocumentoFiscal>();
     public DbSet<Plano> Planos => Set<Plano>();
     public DbSet<Assinatura> Assinaturas => Set<Assinatura>();
+    public DbSet<Filial> Filiais => Set<Filial>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -10,7 +10,7 @@ public class RegistrarEntradaHandler(IEntradaEstoqueService entradaEstoqueServic
     {
         var loteId = await entradaEstoqueService.EntrarAsync(
             request.ProdutoId, request.NumeroLote, request.Validade, request.Quantidade,
-            request.Localizacao, request.Motivo ?? "Entrada de estoque", ct);
+            request.Localizacao, request.Motivo ?? "Entrada de estoque", request.FilialId, ct);
 
         await unitOfWork.SaveChangesAsync(ct);
 

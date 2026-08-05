@@ -12,5 +12,6 @@ public class LoteConfiguration : IEntityTypeConfiguration<Lote>
         builder.HasKey(l => l.Id);
         builder.Property(l => l.NumeroLote).HasMaxLength(50).IsRequired();
         builder.HasIndex(l => new { l.TenantId, l.ProdutoId, l.NumeroLote });
+        builder.HasIndex(l => l.FilialId);
     }
 }

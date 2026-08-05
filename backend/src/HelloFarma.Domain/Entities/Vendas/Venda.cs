@@ -6,11 +6,13 @@ namespace HelloFarma.Domain.Entities.Vendas;
 /// <summary>
 /// Venda realizada no PDV. Toda venda finalizada possui pagamento vinculado
 /// (nunca uma venda sem forma de pagamento definida), conforme diretriz do Hello Farma.
+/// Pode ser atribuída a uma Filial específica quando o tenant opera múltiplas unidades.
 /// </summary>
 public class Venda : BaseEntity
 {
     public Guid UsuarioId { get; private set; }
     public Guid? ClienteId { get; private set; }
+    public Guid? FilialId { get; private set; }
     public FormaPagamento FormaPagamento { get; private set; }
     public StatusVenda Status { get; private set; }
     public decimal ValorTotal { get; private set; }
@@ -21,12 +23,13 @@ public class Venda : BaseEntity
 
     protected Venda() { }
 
-    public Venda(Guid tenantId, Guid usuarioId, FormaPagamento formaPagamento, Guid? clienteId = null)
+    public Venda(Guid tenantId, Guid usuarioId, FormaPagamento formaPagamento, Guid? clienteId = null, Guid? filialId = null)
     {
         TenantId = tenantId;
         UsuarioId = usuarioId;
         FormaPagamento = formaPagamento;
         ClienteId = clienteId;
+        FilialId = filialId;
         Status = StatusVenda.Finalizada;
     }
 

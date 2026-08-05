@@ -8,7 +8,7 @@ public class RegistrarSaidaHandler(IBaixaEstoqueService baixaEstoqueService, IUn
 {
     public async Task<Unit> Handle(RegistrarSaidaCommand request, CancellationToken ct)
     {
-        await baixaEstoqueService.BaixarAsync(request.ProdutoId, request.Quantidade, request.Motivo ?? "Saída de estoque", ct);
+        await baixaEstoqueService.BaixarAsync(request.ProdutoId, request.Quantidade, request.Motivo ?? "Saída de estoque", request.FilialId, ct);
         await unitOfWork.SaveChangesAsync(ct);
         return Unit.Value;
     }

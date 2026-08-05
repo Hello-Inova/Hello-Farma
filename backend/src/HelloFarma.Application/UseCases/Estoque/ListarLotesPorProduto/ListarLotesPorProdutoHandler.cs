@@ -9,12 +9,12 @@ public class ListarLotesPorProdutoHandler(ILoteRepository loteRepository, IProdu
 {
     public async Task<IReadOnlyList<LoteDto>> Handle(ListarLotesPorProdutoQuery request, CancellationToken ct)
     {
-        var lotes = await loteRepository.ListarPorProdutoAsync(request.ProdutoId, ct);
+        var lotes = await loteRepository.ListarPorProdutoAsync(request.ProdutoId, request.FilialId, ct);
         var produto = await produtoRepository.GetByIdAsync(request.ProdutoId, ct);
         var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
 
         return lotes.OrderBy(l => l.Validade).Select(l => new LoteDto(
-            l.Id, l.ProdutoId, produto?.Nome ?? "-", l.NumeroLote, l.Validade, l.QuantidadeAtual, l.Localizacao,
+            l.Id, l.ProdutoId, produto?.Nome ?? "-", l.FilialId, l.NumeroLote, l.Validade, l.QuantidadeAtual, l.Localizacao,
             l.Validade.DayNumber - hoje.DayNumber)).ToList();
     }
 }

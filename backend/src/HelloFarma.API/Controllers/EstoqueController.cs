@@ -2,6 +2,7 @@ using HelloFarma.Application.UseCases.Estoque.ListarLotesPorProduto;
 using HelloFarma.Application.UseCases.Estoque.ListarLotesProximosVencimento;
 using HelloFarma.Application.UseCases.Estoque.RegistrarEntrada;
 using HelloFarma.Application.UseCases.Estoque.RegistrarSaida;
+using HelloFarma.Application.UseCases.Estoque.TransferirEstoque;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,11 +30,19 @@ public class EstoqueController(IMediator mediator) : ControllerBase
         return NoContent();
     }
 
-    /// <summary>Lista os lotes de um produto, ordenados por validade (FEFO).</summary>
-    [HttpGet("produtos/{produtoId:guid}/lotes")]
-    public async Task<IActionResult> ListarLotesPorProduto(Guid produtoId, CancellationToken ct)
+    /// <summary>Transfere estoque de um lote entre duas filiais.</summary>
+    [HttpPost("transferencias")]
+    public async Task<IActionResult> Transferir(TransferirEstoqueCommand command, CancellationToken ct)
     {
-        var lotes = await mediator.Send(new ListarLotesPorProdutoQuery(produtoId), ct);
+        await mediator.Send(command, ct);
+        return NoContent();
+    }
+
+    /// <summary>Lista os lotes de um produto, ordenados por validade (FEFO). Filtre por filial com ?filialId=.</summary>
+    [HttpGet("produtos/{produtoId:guid}/lotes")]
+    public async Task<IActionResult> ListarLotesPorProduto(Guid produtoId, [FromQuery] Guid? filialId, CancellationToken ct)
+    {
+        var lotes = await mediator.Send(new ListarLotesPorProdutoQuery(produtoId, filialId), ct);
         return Ok(lotes);
     }
 

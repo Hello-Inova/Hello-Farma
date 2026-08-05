@@ -4,6 +4,7 @@ public record LoteDto(
     Guid Id,
     Guid ProdutoId,
     string ProdutoNome,
+    Guid? FilialId,
     string NumeroLote,
     DateOnly Validade,
     int QuantidadeAtual,
