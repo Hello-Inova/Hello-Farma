@@ -1,0 +1,10 @@
+using HelloFarma.Domain.Entities.Estoque;
+
+namespace HelloFarma.Application.Interfaces;
+
+public interface ILoteRepository : IRepository<Lote>
+{
+    Task<Lote?> ObterPorNumeroAsync(Guid produtoId, string numeroLote, CancellationToken ct = default);
+    Task<IReadOnlyList<Lote>> ListarPorProdutoAsync(Guid produtoId, CancellationToken ct = default);
+    Task<IReadOnlyList<Lote>> ListarProximosDoVencimentoAsync(int diasAlerta, CancellationToken ct = default);
+}
