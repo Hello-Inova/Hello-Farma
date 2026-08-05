@@ -167,7 +167,8 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<HelloFarmaDbContext>();
-    await DbSeeder.SeedAsync(db);
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    await DbSeeder.SeedAsync(db, passwordHasher);
 }
 
 app.Run();

@@ -13,4 +13,12 @@ public class AssinaturaRepository(HelloFarmaDbContext context) : EfRepository<As
             .Where(a => !a.IsDeleted && (a.Status == StatusAssinatura.Ativa || a.Status == StatusAssinatura.Trial))
             .OrderByDescending(a => a.InicioEm)
             .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<Assinatura>> ListarMaisRecentesDeTodosOsTenantsAsync(CancellationToken ct = default) =>
+        await context.Assinaturas
+            .IgnoreQueryFilters()
+            .Where(a => !a.IsDeleted)
+            .GroupBy(a => a.TenantId)
+            .Select(g => g.OrderByDescending(a => a.InicioEm).First())
+            .ToListAsync(ct);
 }
