@@ -17,7 +17,7 @@ public class ListarLotesProximosVencimentoHandler(ILoteRepository loteRepository
         {
             var produto = await produtoRepository.GetByIdAsync(lote.ProdutoId, ct);
             resultado.Add(new LoteDto(
-                lote.Id, lote.ProdutoId, produto?.Nome ?? "(produto removido)", lote.NumeroLote,
+                lote.Id, lote.ProdutoId, produto?.Nome ?? "(produto removido)", lote.FilialId, lote.NumeroLote,
                 lote.Validade, lote.QuantidadeAtual, lote.Localizacao,
                 lote.Validade.DayNumber - hoje.DayNumber));
         }
