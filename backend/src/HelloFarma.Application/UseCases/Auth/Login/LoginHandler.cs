@@ -1,7 +1,7 @@
 using HelloFarma.Application.Interfaces;
-using HelloFarma.Domain.Entities.Auth;
 using HelloFarma.Domain.Entities.Usuarios;
 using MediatR;
+using DomainRefreshToken = HelloFarma.Domain.Entities.Auth.RefreshToken;
 
 namespace HelloFarma.Application.UseCases.Auth.Login;
 
@@ -14,7 +14,7 @@ public class LoginHandler(
     ITenantRepository tenantRepository,
     IPasswordHasher passwordHasher,
     IJwtTokenGenerator jwtTokenGenerator,
-    IRepository<RefreshToken> refreshTokenRepository,
+    IRepository<DomainRefreshToken> refreshTokenRepository,
     IUnitOfWork unitOfWork) : IRequestHandler<LoginCommand, LoginResult>
 {
     public async Task<LoginResult> Handle(LoginCommand request, CancellationToken ct)
@@ -37,7 +37,7 @@ public class LoginHandler(
         var accessToken = jwtTokenGenerator.GerarAccessToken(usuario);
         var refreshTokenValue = jwtTokenGenerator.GerarRefreshToken();
 
-        var refreshToken = new RefreshToken(usuario.TenantId, usuario.Id, refreshTokenValue, DateTime.UtcNow.AddDays(30));
+        var refreshToken = new DomainRefreshToken(usuario.TenantId, usuario.Id, refreshTokenValue, DateTime.UtcNow.AddDays(30));
         await refreshTokenRepository.AddAsync(refreshToken, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
