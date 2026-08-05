@@ -34,8 +34,20 @@ public class Cliente : BaseEntity
 
     public void ResgatarCashback(decimal valor)
     {
+        if (valor <= 0) return;
         if (valor > SaldoCashback) throw new InvalidOperationException("Saldo de cashback insuficiente.");
         SaldoCashback -= valor;
+        Touch();
+    }
+
+    /// <summary>
+    /// Estorna cashback automaticamente (ex.: devolução de venda). Nunca lança exceção
+    /// nem deixa o saldo negativo — diferente de ResgatarCashback, que é uma ação do cliente.
+    /// </summary>
+    public void EstornarCashback(decimal valor)
+    {
+        if (valor <= 0) return;
+        SaldoCashback = Math.Max(0, SaldoCashback - valor);
         Touch();
     }
 }

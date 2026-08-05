@@ -6,7 +6,8 @@ namespace HelloFarma.Domain.Entities.Vendas;
 /// <summary>
 /// Venda realizada no PDV. Toda venda finalizada possui pagamento vinculado
 /// (nunca uma venda sem forma de pagamento definida), conforme diretriz do Hello Farma.
-/// Pode ser atribuída a uma Filial específica quando o tenant opera múltiplas unidades.
+/// Pode ser atribuída a uma Filial específica e a um Cliente (habilitando cashback e
+/// fidelização), quando o tenant opera com essas funcionalidades.
 /// </summary>
 public class Venda : BaseEntity
 {
@@ -16,6 +17,9 @@ public class Venda : BaseEntity
     public FormaPagamento FormaPagamento { get; private set; }
     public StatusVenda Status { get; private set; }
     public decimal ValorTotal { get; private set; }
+    public decimal CashbackUtilizado { get; private set; }
+    public decimal CashbackGerado { get; private set; }
+    public decimal ValorPago => ValorTotal - CashbackUtilizado;
     public DateTime RealizadaEmUtc { get; private set; } = DateTime.UtcNow;
 
     private readonly List<ItemVenda> _itens = new();
@@ -42,5 +46,29 @@ public class Venda : BaseEntity
         ValorTotal += item.Subtotal;
     }
 
+    /// <summary>
+    /// Aplica o cashback resgatado (usado como parte do pagamento) e o cashback gerado
+    /// por esta venda (creditado ao cliente). Deve ser chamado uma única vez, após todos
+    /// os itens terem sido adicionados.
+    /// </summary>
+    public void AplicarCashback(decimal cashbackUtilizado, decimal cashbackGerado)
+    {
+        if (cashbackUtilizado < 0 || cashbackGerado < 0)
+            throw new InvalidOperationException("Valores de cashback não podem ser negativos.");
+        if (cashbackUtilizado > ValorTotal)
+            throw new InvalidOperationException("O cashback utilizado não pode ser maior que o total da venda.");
+
+        CashbackUtilizado = cashbackUtilizado;
+        CashbackGerado = cashbackGerado;
+    }
+
     public void Cancelar() => Status = StatusVenda.Cancelada;
+
+    public void MarcarParcialmenteDevolvida()
+    {
+        if (Status is StatusVenda.Finalizada or StatusVenda.ParcialmenteDevolvida)
+            Status = StatusVenda.ParcialmenteDevolvida;
+    }
+
+    public void MarcarDevolvida() => Status = StatusVenda.Devolvida;
 }

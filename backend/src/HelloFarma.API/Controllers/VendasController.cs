@@ -1,5 +1,6 @@
 using HelloFarma.Application.UseCases.Vendas.CriarVenda;
 using HelloFarma.Application.UseCases.Vendas.ListarVendasDoDia;
+using HelloFarma.Application.UseCases.Vendas.RegistrarDevolucao;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,4 +27,15 @@ public class VendasController(IMediator mediator) : ControllerBase
         var vendas = await mediator.Send(new ListarVendasDoDiaQuery(), ct);
         return Ok(vendas);
     }
+
+    /// <summary>Registra troca/devolução (total ou parcial) de uma venda.</summary>
+    [HttpPost("{id:guid}/devolucoes")]
+    public async Task<IActionResult> RegistrarDevolucao(Guid id, [FromBody] RegistrarDevolucaoBody body, CancellationToken ct)
+    {
+        var devolucaoId = await mediator.Send(new RegistrarDevolucaoCommand(id, body.Itens, body.Motivo), ct);
+        return Ok(new { id = devolucaoId });
+    }
 }
+
+/// <summary>Corpo da requisição de devolução — o Id da venda vem da rota, não do body.</summary>
+public record RegistrarDevolucaoBody(List<ItemDevolucaoInput> Itens, string? Motivo);

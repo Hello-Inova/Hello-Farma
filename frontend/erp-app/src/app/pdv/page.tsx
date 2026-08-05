@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { produtosApi } from "@/lib/produtos-api";
 import { vendasApi } from "@/lib/vendas-api";
+import { crmApi, type Cliente } from "@/lib/crm-api";
 import type { Produto } from "@/types/produto";
 
 interface LinhaCarrinho {
@@ -26,6 +27,11 @@ export default function PdvPage() {
   const [mensagem, setMensagem] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [buscaCliente, setBuscaCliente] = useState("");
+  const [resultadosCliente, setResultadosCliente] = useState<Cliente[]>([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
+  const [cashbackUtilizado, setCashbackUtilizado] = useState(0);
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -38,6 +44,28 @@ export default function PdvPage() {
     }
     const dados = await produtosApi.listar(termo);
     setResultados(dados);
+  }
+
+  async function handleBuscaCliente(termo: string) {
+    setBuscaCliente(termo);
+    if (termo.trim().length < 2) {
+      setResultadosCliente([]);
+      return;
+    }
+    const dados = await crmApi.listar(termo);
+    setResultadosCliente(dados);
+  }
+
+  function selecionarCliente(cliente: Cliente) {
+    setClienteSelecionado(cliente);
+    setBuscaCliente("");
+    setResultadosCliente([]);
+    setCashbackUtilizado(0);
+  }
+
+  function removerCliente() {
+    setClienteSelecionado(null);
+    setCashbackUtilizado(0);
   }
 
   function adicionarAoCarrinho(produto: Produto) {
@@ -62,6 +90,8 @@ export default function PdvPage() {
   }
 
   const total = carrinho.reduce((soma, l) => soma + l.produto.pmc * l.quantidade, 0);
+  const cashbackMaximo = clienteSelecionado ? Math.min(clienteSelecionado.saldoCashback, total) : 0;
+  const totalAPagar = Math.max(0, total - cashbackUtilizado);
 
   async function finalizarVenda() {
     if (carrinho.length === 0) return;
@@ -69,9 +99,13 @@ export default function PdvPage() {
     try {
       await vendasApi.criar(
         carrinho.map((l) => ({ produtoId: l.produto.id, quantidade: l.quantidade })),
-        formaPagamento
+        formaPagamento,
+        clienteSelecionado?.id,
+        clienteSelecionado ? cashbackUtilizado : 0
       );
       setCarrinho([]);
+      setClienteSelecionado(null);
+      setCashbackUtilizado(0);
       setMensagem("Venda concluída com sucesso!");
     } catch {
       setMensagem("Não foi possível concluir a venda (verifique o estoque).");
@@ -82,6 +116,44 @@ export default function PdvPage() {
     <main className="flex flex-1 flex-col gap-4 p-6 md:flex-row md:p-8">
       <section className="flex-1">
         <h1 className="mb-4 text-2xl font-semibold">PDV</h1>
+
+        <div className="relative mb-3">
+          {clienteSelecionado ? (
+            <div className="flex items-center justify-between rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-2 text-sm">
+              <span>
+                Cliente: <strong>{clienteSelecionado.nome}</strong>{" "}
+                <span className="text-[var(--color-muted-foreground)]">
+                  (cashback disponível: R$ {clienteSelecionado.saldoCashback.toFixed(2)})
+                </span>
+              </span>
+              <button onClick={removerCliente} className="text-xs text-[var(--color-danger)]">Remover</button>
+            </div>
+          ) : (
+            <>
+              <input
+                value={buscaCliente}
+                onChange={(e) => handleBuscaCliente(e.target.value)}
+                placeholder="Vincular cliente (nome ou CPF) — opcional"
+                className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+              />
+              {resultadosCliente.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-card)]">
+                  {resultadosCliente.map((c) => (
+                    <li key={c.id}>
+                      <button
+                        onClick={() => selecionarCliente(c)}
+                        className="flex w-full justify-between px-4 py-2 text-left text-sm hover:bg-[var(--color-muted)]"
+                      >
+                        <span>{c.nome}</span>
+                        <span className="text-[var(--color-muted-foreground)]">R$ {c.saldoCashback.toFixed(2)}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
 
         <div className="relative">
           <input
@@ -128,8 +200,29 @@ export default function PdvPage() {
       </section>
 
       <aside className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-card)] p-6 md:w-80">
-        <p className="text-sm text-[var(--color-muted-foreground)]">Total</p>
-        <p className="mb-4 text-3xl font-semibold">R$ {total.toFixed(2)}</p>
+        <p className="text-sm text-[var(--color-muted-foreground)]">Subtotal</p>
+        <p className="mb-2 text-2xl font-semibold">R$ {total.toFixed(2)}</p>
+
+        {clienteSelecionado && cashbackMaximo > 0 && (
+          <div className="mb-3">
+            <label className="mb-1 block text-sm font-medium">Usar cashback (máx. R$ {cashbackMaximo.toFixed(2)})</label>
+            <input
+              type="number"
+              min={0}
+              max={cashbackMaximo}
+              step={0.01}
+              value={cashbackUtilizado}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setCashbackUtilizado(Math.max(0, Math.min(v, cashbackMaximo)));
+              }}
+              className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 py-2 text-sm"
+            />
+          </div>
+        )}
+
+        <p className="text-sm text-[var(--color-muted-foreground)]">Total a pagar</p>
+        <p className="mb-4 text-3xl font-semibold">R$ {totalAPagar.toFixed(2)}</p>
 
         <label className="mb-1 block text-sm font-medium">Forma de pagamento</label>
         <select

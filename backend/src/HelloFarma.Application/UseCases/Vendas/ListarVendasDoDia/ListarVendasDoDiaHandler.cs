@@ -14,7 +14,8 @@ public class ListarVendasDoDiaHandler(IVendaRepository vendaRepository) : IReque
         var vendas = await vendaRepository.ListarPorPeriodoAsync(inicio, fim, ct);
 
         return vendas.Select(v => new VendaDto(
-            v.Id, v.RealizadaEmUtc, (int)v.FormaPagamento, (int)v.Status, v.ValorTotal,
+            v.Id, v.RealizadaEmUtc, (int)v.FormaPagamento, (int)v.Status, v.ClienteId, v.ValorTotal,
+            v.CashbackUtilizado, v.CashbackGerado, v.ValorPago,
             v.Itens.Select(i => new ItemVendaDto(i.ProdutoId, i.ProdutoNome, i.Quantidade, i.PrecoUnitario, i.Subtotal)).ToList())).ToList();
     }
 }

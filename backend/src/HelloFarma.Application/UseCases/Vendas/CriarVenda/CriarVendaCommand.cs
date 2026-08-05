@@ -7,6 +7,13 @@ public record ItemVendaInput(Guid ProdutoId, int Quantidade);
 /// <summary>
 /// Fecha uma venda no PDV: valida produtos, calcula total pelo PMC vigente,
 /// baixa estoque via FEFO (respeitando a filial informada, se houver) e
-/// persiste a venda com pagamento vinculado.
+/// persiste a venda com pagamento vinculado. Quando um cliente é informado,
+/// permite resgatar cashback (CashbackUtilizado) como parte do pagamento e
+/// credita cashback gerado por esta compra ao saldo do cliente.
 /// </summary>
-public record CriarVendaCommand(List<ItemVendaInput> Itens, int FormaPagamento, Guid? ClienteId, Guid? FilialId = null) : IRequest<Guid>;
+public record CriarVendaCommand(
+    List<ItemVendaInput> Itens,
+    int FormaPagamento,
+    Guid? ClienteId,
+    Guid? FilialId = null,
+    decimal CashbackUtilizado = 0) : IRequest<Guid>;

@@ -1,4 +1,5 @@
 using HelloFarma.Application.Interfaces;
+using HelloFarma.Domain.Entities.Crm;
 using HelloFarma.Domain.Entities.Financeiro;
 using HelloFarma.Domain.Entities.Fiscal;
 using HelloFarma.Domain.Entities.Vendas;
@@ -13,14 +14,29 @@ public class CriarVendaHandler(
     IBaixaEstoqueService baixaEstoqueService,
     IContaFinanceiraRepository contaFinanceiraRepository,
     IDocumentoFiscalRepository documentoFiscalRepository,
+    IClienteRepository clienteRepository,
     ICurrentTenant currentTenant,
     ICurrentUser currentUser,
     IUnitOfWork unitOfWork) : IRequestHandler<CriarVendaCommand, Guid>
 {
+    /// <summary>Percentual padrão de cashback gerado sobre o valor efetivamente pago pelo cliente.</summary>
+    private const decimal PercentualCashback = 0.02m;
+
     public async Task<Guid> Handle(CriarVendaCommand request, CancellationToken ct)
     {
         if (request.Itens.Count == 0)
             throw new InvalidOperationException("A venda precisa ter ao menos um item.");
+
+        Cliente? cliente = null;
+        if (request.ClienteId.HasValue)
+        {
+            cliente = await clienteRepository.GetByIdAsync(request.ClienteId.Value, ct)
+                ?? throw new KeyNotFoundException("Cliente não encontrado.");
+        }
+        else if (request.CashbackUtilizado > 0)
+        {
+            throw new InvalidOperationException("É necessário informar um cliente para resgatar cashback.");
+        }
 
         var venda = new Venda(currentTenant.TenantId, currentUser.UsuarioId, (FormaPagamento)request.FormaPagamento, request.ClienteId, request.FilialId);
 
@@ -37,10 +53,25 @@ public class CriarVendaHandler(
             await baixaEstoqueService.BaixarAsync(produto.Id, itemInput.Quantidade, $"Venda {venda.Id}", request.FilialId, ct);
         }
 
+        if (request.CashbackUtilizado > 0 && cliente is not null)
+            cliente.ResgatarCashback(request.CashbackUtilizado);
+
+        var cashbackGerado = cliente is not null
+            ? Math.Round((venda.ValorTotal - request.CashbackUtilizado) * PercentualCashback, 2)
+            : 0m;
+
+        venda.AplicarCashback(request.CashbackUtilizado, cashbackGerado);
+
+        if (cliente is not null)
+        {
+            cliente.AcumularCashback(cashbackGerado);
+            clienteRepository.Update(cliente);
+        }
+
         await vendaRepository.AddAsync(venda, ct);
 
         var conta = ContaFinanceira.CriarJaPaga(
-            currentTenant.TenantId, TipoContaFinanceira.Receber, $"Venda PDV {venda.Id}", venda.ValorTotal, "Venda", venda.Id);
+            currentTenant.TenantId, TipoContaFinanceira.Receber, $"Venda PDV {venda.Id}", venda.ValorPago, "Venda", venda.Id);
         await contaFinanceiraRepository.AddAsync(conta, ct);
 
         var documentoFiscal = new DocumentoFiscal(currentTenant.TenantId, venda.Id);

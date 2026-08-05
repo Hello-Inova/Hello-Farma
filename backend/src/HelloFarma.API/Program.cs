@@ -73,6 +73,7 @@ builder.Services.AddScoped<IEmissorFiscal, EmissorFiscalSimulado>();
 builder.Services.AddScoped<IPlanoRepository, PlanoRepository>();
 builder.Services.AddScoped<IAssinaturaRepository, AssinaturaRepository>();
 builder.Services.AddScoped<IFilialRepository, FilialRepository>();
+builder.Services.AddScoped<IDevolucaoRepository, DevolucaoRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Segurança

@@ -13,4 +13,9 @@ public class VendaRepository(HelloFarmaDbContext context) : EfRepository<Venda>(
             .Where(v => !v.IsDeleted && v.RealizadaEmUtc >= inicioUtc && v.RealizadaEmUtc < fimUtc)
             .OrderByDescending(v => v.RealizadaEmUtc)
             .ToListAsync(ct);
+
+    public async Task<Venda?> ObterComItensAsync(Guid id, CancellationToken ct = default) =>
+        await context.Vendas
+            .Include(v => v.Itens)
+            .FirstOrDefaultAsync(v => v.Id == id && !v.IsDeleted, ct);
 }

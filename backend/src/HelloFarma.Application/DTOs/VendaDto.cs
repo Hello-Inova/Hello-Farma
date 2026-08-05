@@ -7,5 +7,9 @@ public record VendaDto(
     DateTime RealizadaEmUtc,
     int FormaPagamento,
     int Status,
+    Guid? ClienteId,
     decimal ValorTotal,
+    decimal CashbackUtilizado,
+    decimal CashbackGerado,
+    decimal ValorPago,
     IReadOnlyList<ItemVendaDto> Itens);
