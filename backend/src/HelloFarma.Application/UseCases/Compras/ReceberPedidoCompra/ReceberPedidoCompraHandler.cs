@@ -1,4 +1,6 @@
 using HelloFarma.Application.Interfaces;
+using HelloFarma.Domain.Entities.Financeiro;
+using HelloFarma.Domain.Enums;
 using MediatR;
 
 namespace HelloFarma.Application.UseCases.Compras.ReceberPedidoCompra;
@@ -6,6 +8,8 @@ namespace HelloFarma.Application.UseCases.Compras.ReceberPedidoCompra;
 public class ReceberPedidoCompraHandler(
     IPedidoCompraRepository pedidoRepository,
     IEntradaEstoqueService entradaEstoqueService,
+    IContaFinanceiraRepository contaFinanceiraRepository,
+    ICurrentTenant currentTenant,
     IUnitOfWork unitOfWork) : IRequestHandler<ReceberPedidoCompraCommand, Unit>
 {
     public async Task<Unit> Handle(ReceberPedidoCompraCommand request, CancellationToken ct)
@@ -23,6 +27,12 @@ public class ReceberPedidoCompraHandler(
         }
 
         pedidoRepository.Update(pedido);
+
+        var conta = new ContaFinanceira(
+            currentTenant.TenantId, TipoContaFinanceira.Pagar, $"Compra - pedido {pedido.Id}", pedido.ValorTotal,
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)), "PedidoCompra", pedido.Id);
+        await contaFinanceiraRepository.AddAsync(conta, ct);
+
         await unitOfWork.SaveChangesAsync(ct);
 
         return Unit.Value;

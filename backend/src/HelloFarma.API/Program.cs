@@ -63,6 +63,7 @@ builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>();
 builder.Services.AddScoped<IEntradaEstoqueService, EntradaEstoqueService>();
 builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
 builder.Services.AddScoped<IPedidoCompraRepository, PedidoCompraRepository>();
+builder.Services.AddScoped<IContaFinanceiraRepository, ContaFinanceiraRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Segurança

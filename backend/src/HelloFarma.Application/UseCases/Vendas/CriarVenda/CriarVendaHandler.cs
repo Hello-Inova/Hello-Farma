@@ -1,4 +1,5 @@
 using HelloFarma.Application.Interfaces;
+using HelloFarma.Domain.Entities.Financeiro;
 using HelloFarma.Domain.Entities.Vendas;
 using HelloFarma.Domain.Enums;
 using MediatR;
@@ -9,6 +10,7 @@ public class CriarVendaHandler(
     IProdutoRepository produtoRepository,
     IVendaRepository vendaRepository,
     IBaixaEstoqueService baixaEstoqueService,
+    IContaFinanceiraRepository contaFinanceiraRepository,
     ICurrentTenant currentTenant,
     ICurrentUser currentUser,
     IUnitOfWork unitOfWork) : IRequestHandler<CriarVendaCommand, Guid>
@@ -34,6 +36,11 @@ public class CriarVendaHandler(
         }
 
         await vendaRepository.AddAsync(venda, ct);
+
+        var conta = ContaFinanceira.CriarJaPaga(
+            currentTenant.TenantId, TipoContaFinanceira.Receber, $"Venda PDV {venda.Id}", venda.ValorTotal, "Venda", venda.Id);
+        await contaFinanceiraRepository.AddAsync(conta, ct);
+
         await unitOfWork.SaveChangesAsync(ct);
 
         return venda.Id;
