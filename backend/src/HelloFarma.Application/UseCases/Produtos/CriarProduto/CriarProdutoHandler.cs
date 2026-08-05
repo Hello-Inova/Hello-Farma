@@ -5,10 +5,10 @@ using MediatR;
 
 namespace HelloFarma.Application.UseCases.Produtos.CriarProduto;
 
-public class CriarProdutoHandler(IRepository<Produto> repository, ICurrentTenant currentTenant)
+public class CriarProdutoHandler(IProdutoRepository repository, ICurrentTenant currentTenant, IUnitOfWork unitOfWork)
     : IRequestHandler<CriarProdutoCommand, Guid>
 {
-    public async Task<Guid> Handle(CriarProdutoCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CriarProdutoCommand request, CancellationToken ct)
     {
         var produto = new Produto(
             currentTenant.TenantId,
@@ -18,9 +18,16 @@ public class CriarProdutoHandler(IRepository<Produto> repository, ICurrentTenant
             request.Pmc,
             request.Pf,
             request.Controlado,
-            request.ReceitaObrigatoria);
+            request.ReceitaObrigatoria,
+            request.RegistroAnvisa,
+            request.Laboratorio,
+            request.PrincipioAtivo,
+            request.CategoriaTerapeutica,
+            request.FormaFarmaceutica,
+            request.Concentracao);
 
-        await repository.AddAsync(produto, cancellationToken);
+        await repository.AddAsync(produto, ct);
+        await unitOfWork.SaveChangesAsync(ct);
 
         return produto.Id;
     }

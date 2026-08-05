@@ -9,4 +9,10 @@ public record CriarProdutoCommand(
     decimal Pmc,
     decimal Pf,
     bool Controlado,
-    bool ReceitaObrigatoria) : IRequest<Guid>;
+    bool ReceitaObrigatoria,
+    string? RegistroAnvisa = null,
+    string? Laboratorio = null,
+    string? PrincipioAtivo = null,
+    string? CategoriaTerapeutica = null,
+    string? FormaFarmaceutica = null,
+    string? Concentracao = null) : IRequest<Guid>;

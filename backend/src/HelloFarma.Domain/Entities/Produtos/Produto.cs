@@ -22,6 +22,7 @@ public class Produto : BaseEntity
     public bool ReceitaObrigatoria { get; private set; }
     public decimal Pmc { get; private set; }
     public decimal Pf { get; private set; }
+    public bool Ativo { get; private set; } = true;
 
     protected Produto() { }
 
@@ -33,7 +34,13 @@ public class Produto : BaseEntity
         decimal pmc,
         decimal pf,
         bool controlado = false,
-        bool receitaObrigatoria = false)
+        bool receitaObrigatoria = false,
+        string? registroAnvisa = null,
+        string? laboratorio = null,
+        string? principioAtivo = null,
+        string? categoriaTerapeutica = null,
+        string? formaFarmaceutica = null,
+        string? concentracao = null)
     {
         TenantId = tenantId;
         Nome = nome;
@@ -43,6 +50,12 @@ public class Produto : BaseEntity
         Pf = pf;
         Controlado = controlado;
         ReceitaObrigatoria = receitaObrigatoria;
+        RegistroAnvisa = registroAnvisa;
+        Laboratorio = laboratorio;
+        PrincipioAtivo = principioAtivo;
+        CategoriaTerapeutica = categoriaTerapeutica;
+        FormaFarmaceutica = formaFarmaceutica;
+        Concentracao = concentracao;
     }
 
     public void AtualizarPreco(decimal pmc, decimal pf)
@@ -51,4 +64,28 @@ public class Produto : BaseEntity
         Pf = pf;
         Touch();
     }
+
+    public void AtualizarDados(
+        string nome,
+        string? laboratorio,
+        string? principioAtivo,
+        string? categoriaTerapeutica,
+        string? formaFarmaceutica,
+        string? concentracao,
+        bool controlado,
+        bool receitaObrigatoria)
+    {
+        Nome = nome;
+        Laboratorio = laboratorio;
+        PrincipioAtivo = principioAtivo;
+        CategoriaTerapeutica = categoriaTerapeutica;
+        FormaFarmaceutica = formaFarmaceutica;
+        Concentracao = concentracao;
+        Controlado = controlado;
+        ReceitaObrigatoria = receitaObrigatoria;
+        Touch();
+    }
+
+    public void Desativar() => Ativo = false;
+    public void Ativar() => Ativo = true;
 }
