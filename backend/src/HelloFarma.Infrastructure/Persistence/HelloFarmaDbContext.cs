@@ -1,6 +1,8 @@
 using HelloFarma.Application.Interfaces;
 using HelloFarma.Domain.Common;
 using HelloFarma.Domain.Entities.Auth;
+using HelloFarma.Domain.Entities.Billing;
+using HelloFarma.Domain.Entities.Fiscal;
 using HelloFarma.Domain.Entities.Compras;
 using HelloFarma.Domain.Entities.Crm;
 using HelloFarma.Domain.Entities.Delivery;
@@ -36,6 +38,9 @@ public class HelloFarmaDbContext(DbContextOptions<HelloFarmaDbContext> options, 
     public DbSet<ContaFinanceira> ContasFinanceiras => Set<ContaFinanceira>();
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<PedidoDelivery> PedidosDelivery => Set<PedidoDelivery>();
+    public DbSet<DocumentoFiscal> DocumentosFiscais => Set<DocumentoFiscal>();
+    public DbSet<Plano> Planos => Set<Plano>();
+    public DbSet<Assinatura> Assinaturas => Set<Assinatura>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +49,7 @@ public class HelloFarmaDbContext(DbContextOptions<HelloFarmaDbContext> options, 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             if (entityType.ClrType == typeof(Tenant)) continue;
+            if (entityType.ClrType == typeof(Plano)) continue; // catálogo global da Hello Platform, não pertence a um tenant específico
             if (!typeof(BaseEntity).IsAssignableFrom(entityType.ClrType)) continue;
 
             var method = typeof(HelloFarmaDbContext)

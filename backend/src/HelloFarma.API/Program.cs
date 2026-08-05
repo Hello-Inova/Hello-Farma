@@ -6,6 +6,8 @@ using HelloFarma.Application.Services;
 using HelloFarma.Infrastructure.Identity;
 using HelloFarma.Infrastructure.Persistence;
 using HelloFarma.Infrastructure.Repositories;
+using HelloFarma.Infrastructure.Persistence.Seed;
+using HelloFarma.Infrastructure.Services;
 using HelloFarma.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +68,10 @@ builder.Services.AddScoped<IPedidoCompraRepository, PedidoCompraRepository>();
 builder.Services.AddScoped<IContaFinanceiraRepository, ContaFinanceiraRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IPedidoDeliveryRepository, PedidoDeliveryRepository>();
+builder.Services.AddScoped<IDocumentoFiscalRepository, DocumentoFiscalRepository>();
+builder.Services.AddScoped<IEmissorFiscal, EmissorFiscalSimulado>();
+builder.Services.AddScoped<IPlanoRepository, PlanoRepository>();
+builder.Services.AddScoped<IAssinaturaRepository, AssinaturaRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Segurança
@@ -112,5 +118,11 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<HelloFarmaDbContext>();
+    await DbSeeder.SeedAsync(db);
+}
 
 app.Run();
