@@ -1,5 +1,6 @@
 using HelloFarma.Application.Interfaces;
 using HelloFarma.Domain.Common;
+using HelloFarma.Domain.Entities.Auditoria;
 using HelloFarma.Domain.Entities.Auth;
 using HelloFarma.Domain.Entities.Billing;
 using HelloFarma.Domain.Entities.Fiscal;
@@ -45,6 +46,7 @@ public class HelloFarmaDbContext(DbContextOptions<HelloFarmaDbContext> options, 
     public DbSet<Plano> Planos => Set<Plano>();
     public DbSet<Assinatura> Assinaturas => Set<Assinatura>();
     public DbSet<Filial> Filiais => Set<Filial>();
+    public DbSet<LogAuditoria> LogsAuditoria => Set<LogAuditoria>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

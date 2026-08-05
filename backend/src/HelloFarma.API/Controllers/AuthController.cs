@@ -3,6 +3,7 @@ using HelloFarma.Application.UseCases.Auth.RefreshToken;
 using HelloFarma.Application.UseCases.Auth.RegistrarTenant;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HelloFarma.API.Controllers;
@@ -10,6 +11,7 @@ namespace HelloFarma.API.Controllers;
 [ApiController]
 [Route("api/v1/auth")]
 [AllowAnonymous]
+[EnableRateLimiting("auth")]
 public class AuthController(IMediator mediator) : ControllerBase
 {
     /// <summary>Cadastra uma nova farmácia (tenant) e seu usuário administrador inicial.</summary>

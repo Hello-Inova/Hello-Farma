@@ -1,4 +1,6 @@
 using System.Text;
+using System.Threading.RateLimiting;
+using HelloFarma.Application.Behaviors;
 using HelloFarma.Application.Interfaces;
 using HelloFarma.Application.UseCases.Produtos.CriarProduto;
 using HelloFarma.Domain.Entities.Auth;
@@ -41,7 +43,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(typeof(CriarProdutoCommand).Assembly));
+{
+    cfg.RegisterServicesFromAssembly(typeof(CriarProdutoCommand).Assembly);
+    cfg.AddOpenBehavior(typeof(AuditoriaBehavior<,>));
+});
 
 builder.Services.AddDbContext<HelloFarmaDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
@@ -49,6 +54,7 @@ builder.Services.AddDbContext<HelloFarmaDbContext>(options =>
 // Multi-tenant: resolve o TenantId do usuário autenticado a partir do JWT
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentTenant, CurrentTenantAccessor>();
+builder.Services.AddScoped<IRequestContext, RequestContextAccessor>();
 
 // Repositórios (Repository Pattern) e Unit of Work
 builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
@@ -74,6 +80,7 @@ builder.Services.AddScoped<IPlanoRepository, PlanoRepository>();
 builder.Services.AddScoped<IAssinaturaRepository, AssinaturaRepository>();
 builder.Services.AddScoped<IFilialRepository, FilialRepository>();
 builder.Services.AddScoped<IDevolucaoRepository, DevolucaoRepository>();
+builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Segurança
@@ -108,6 +115,37 @@ builder.Services.AddCors(options =>
         policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 });
 
+
+// Rate limiting — protege contra abuso e força bruta (ex.: tentativas de login).
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Política global: por IP, 120 requisições por minuto.
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        var chave = httpContext.Connection.RemoteIpAddress?.ToString() ?? "desconhecido";
+        return RateLimitPartition.GetFixedWindowLimiter(chave, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+        });
+    });
+
+    // Política restrita para autenticação — mitiga força bruta de login/registro.
+    options.AddPolicy("auth", httpContext =>
+    {
+        var chave = httpContext.Connection.RemoteIpAddress?.ToString() ?? "desconhecido";
+        return RateLimitPartition.GetFixedWindowLimiter(chave, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+        });
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -117,6 +155,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
