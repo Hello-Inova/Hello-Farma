@@ -95,6 +95,10 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Sem isso, o ASP.NET Core remapeia automaticamente claims JWT padrão (ex.: "sub")
+        // para URIs longas de ClaimTypes, quebrando a leitura de JwtRegisteredClaimNames.Sub
+        // feita em CurrentUserAccessor — o que zerava silenciosamente o UsuarioId em toda requisição.
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
